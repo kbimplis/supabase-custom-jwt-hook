@@ -4,7 +4,6 @@ const { Pool } = require("pg");
 const app = express();
 app.use(express.json());
 
-// Make sure this matches your Supabase DB access
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -27,11 +26,12 @@ app.post("/", async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("❌ Failed to resolve role:", err);
-    res.status(200).json({ claims }); // fail-safe fallback
+    console.error("❌ DB query failed:", err);
+    res.status(200).json({ claims }); // fallback if query fails
   }
 });
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("✅ JWT hook running on port 3000");
 });
+
