@@ -17,26 +17,30 @@ app.post("/", async (req, res) => {
       "SELECT role FROM public.user_roles WHERE user_id = $1 LIMIT 1",
       [user_id]
     );
+
     const user_role = result.rows[0]?.role || null;
     console.log("✅ Injecting user_role:", user_role);
 
     res.status(200).json({
       claims: {
         ...claims,
-        user_role, // <- top-level
+        user_role, // top-level
         app_metadata: {
           ...(claims?.app_metadata || {}),
-          user_role, // <- required for Supabase to preserve it
+          user_role,
+        },
+        user_metadata: {
+          ...(claims?.user_metadata || {}),
+          user_role,
         },
       },
     });
   } catch (err) {
-    console.error("❌ Hook error:", err.message);
-    res.status(200).json({ claims });
+    console.error("❌ Hook DB error:", err.message);
+    res.status(200).json({ claims }); // allow fallback login
   }
 });
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("✅ JWT hook running on port 3000");
 });
-
