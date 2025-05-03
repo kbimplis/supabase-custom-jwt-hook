@@ -19,25 +19,25 @@ app.post("/", async (req, res) => {
     );
 
     const user_role = result.rows[0]?.role || null;
-    console.log("✅ user_role:", user_role);
+    console.log("✅ user_role from DB:", user_role);
 
     res.status(200).json({
       claims: {
         ...claims,
         user_role,
         app_metadata: {
-          ...claims.app_metadata,
+          ...(claims?.app_metadata || {}),
           user_role,
         },
       },
     });
   } catch (err) {
-    console.error("❌ Hook DB error:", err.message);
-    res.status(200).json({ claims }); // Do not block login
+    console.error("❌ Error in JWT hook DB lookup:", err.message);
+    // still allow login, just don't inject role
+    res.status(200).json({ claims });
   }
 });
 
 app.listen(3000, "0.0.0.0", () => {
   console.log("✅ JWT hook running on port 3000");
 });
-
