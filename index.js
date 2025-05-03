@@ -18,6 +18,7 @@ app.post("/", async (req, res) => {
     );
 
     const user_role = result.rows[0]?.role || null;
+    console.log("✅ user_role:", user_role);
 
     res.json({
       claims: {
@@ -26,8 +27,8 @@ app.post("/", async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("❌ Hook DB error:", err.message);
-    res.status(200).json({ claims });
+    console.error("❌ Hook DB error:", err.stack);
+    res.status(200).json({ claims }); // Don't break Gotrue
   }
 });
 
