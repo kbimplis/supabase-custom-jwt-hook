@@ -10,30 +10,28 @@ const pool = new Pool({
 
 app.post("/", async (req, res) => {
   const { user_id, claims } = req.body;
-  console.log("🔔 JWT hook called for user_id:", user_id);
+  console.log("🔔 JWT hook called for user:", user_id);
 
   try {
     const result = await pool.query(
       "SELECT role FROM public.user_roles WHERE user_id = $1 LIMIT 1",
       [user_id]
     );
-
     const user_role = result.rows[0]?.role || null;
-    console.log("✅ user_role from DB:", user_role);
+    console.log("✅ Injecting user_role:", user_role);
 
     res.status(200).json({
       claims: {
         ...claims,
-        user_role,
+        user_role, // <- top-level
         app_metadata: {
           ...(claims?.app_metadata || {}),
-          user_role,
+          user_role, // <- required for Supabase to preserve it
         },
       },
     });
   } catch (err) {
-    console.error("❌ Error in JWT hook DB lookup:", err.message);
-    // still allow login, just don't inject role
+    console.error("❌ Hook error:", err.message);
     res.status(200).json({ claims });
   }
 });
@@ -41,3 +39,4 @@ app.post("/", async (req, res) => {
 app.listen(3000, "0.0.0.0", () => {
   console.log("✅ JWT hook running on port 3000");
 });
+
